@@ -1,37 +1,41 @@
 package lille.telecom.opencvpernemorin;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
-import org.opencv.*;
+import java.io.IOException;
 
 public class MainActivity extends Activity implements View.OnClickListener{
 
-    final static int IMAGE_CAPTURE = 1;
-    final static String tag = MainActivity.class.getName();
+    static final String tag = MainActivity.class.getName();
+    private static final int IMAGE_CAPTURE = 1;
     private Button captureBtn;
-    private Button photoLibraryBtn;
     private ImageView imageActivityMain;
+    private Button libraryBtn;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
-        //Capture d'un bouton captureBtn
+
         captureBtn = (Button)findViewById(R.id.captureBtn);
         captureBtn.setOnClickListener(this);
+        
+        libraryBtn = (Button)findViewById(R.id.photoLibraryBtn);
+        libraryBtn.setOnClickListener(this);
+
         imageActivityMain = (ImageView)findViewById(R.id.imageActivityMain);
-        photoLibraryBtn = (Button)findViewById(R.id.photoLibraryBtn);
-        photoLibraryBtn.setOnClickListener(this);
-        //fin de capture d'un boutonBtn
     }
 
     @Override
@@ -42,37 +46,42 @@ public class MainActivity extends Activity implements View.OnClickListener{
     }
 
 
-    public void onClick(View view){
-        //log lorsque l'on clic sur captureBtn
-        //Log.i(tag, "click on captureButton");
-        //fin de log lorsque l'on clic sur captureBtn
-        if (view == captureBtn){
-            startCaptureActivity();
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == IMAGE_CAPTURE && resultCode == RESULT_OK){
+            Bundle extra = data.getExtras();
+            Bitmap imageBitmap = (Bitmap)extra.get("data");
+            imageActivityMain.setImageBitmap(imageBitmap);
+        }else if(requestCode == 1 && resultCode == RESULT_OK){
+            Uri photoUri = data.getData();
+            try {
+                Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoUri);
+                imageActivityMain.setImageBitmap(imageBitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        if (view == photoLibraryBtn){
+    }
+
+    @Override
+    public void onClick(View view) {
+        if(view == captureBtn){
+            startCaptureActivity();
+        }else if(view == libraryBtn){
             startPhotoLibraryActivity();
         }
 
     }
 
-    protected void startCaptureActivity(){
-        Intent captureItent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        //startActivity(captureItent);
-        startActivityForResult(captureItent,IMAGE_CAPTURE);
+    protected void startCaptureActivity() {
+        Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(captureIntent, IMAGE_CAPTURE);
     }
 
-    protected void startPhotoLibraryActivity(){
-
-    }
-
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-       // Log.i(tag, "bien dans onActivityResult");
-        if (requestCode == IMAGE_CAPTURE && resultCode == RESULT_OK){
-            Bundle extra = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extra.get("data");
-            imageActivityMain.setImageBitmap(imageBitmap);
-        }
+    private void startPhotoLibraryActivity() {
+        Intent libraryIntent = new Intent(Intent.ACTION_PICK);
+        libraryIntent.setType("image/*");
+        startActivityForResult(libraryIntent, 1);
     }
 }

@@ -13,8 +13,7 @@
         android:text="@string/capture"
         android:id="@+id/captureBtn"
         android:layout_gravity="left|top"
-        android:layout_toStartOf="@+id/photoLibraryBtn"
-        android:layout_toLeftOf="@+id/photoLibraryBtn" />
+        android:layout_toStartOf="@+id/analysisBtn" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
