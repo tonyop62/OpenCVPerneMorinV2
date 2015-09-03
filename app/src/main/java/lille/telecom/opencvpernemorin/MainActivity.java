@@ -19,6 +19,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
     static final String tag = MainActivity.class.getName();
     private static final int IMAGE_CAPTURE = 1;
+    private static final int IMAGE_PHOTOLIBRARY = 2;
     private Button captureBtn;
     private ImageView imageActivityMain;
     private Button libraryBtn;
@@ -53,7 +54,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
             Bundle extra = data.getExtras();
             Bitmap imageBitmap = (Bitmap)extra.get("data");
             imageActivityMain.setImageBitmap(imageBitmap);
-        }else if(requestCode == 1 && resultCode == RESULT_OK){
+        }
+        else if(requestCode == IMAGE_PHOTOLIBRARY && resultCode == RESULT_OK){
             Uri photoUri = data.getData();
             try {
                 Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoUri);
@@ -80,8 +82,9 @@ public class MainActivity extends Activity implements View.OnClickListener{
     }
 
     private void startPhotoLibraryActivity() {
-        Intent libraryIntent = new Intent(Intent.ACTION_PICK);
+        Intent libraryIntent = new Intent();
         libraryIntent.setType("image/*");
-        startActivityForResult(libraryIntent, 1);
+        libraryIntent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(libraryIntent, "select location picture"),IMAGE_PHOTOLIBRARY);
     }
 }
