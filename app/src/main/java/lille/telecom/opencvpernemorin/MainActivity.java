@@ -23,6 +23,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private Button captureBtn;
     private ImageView imageActivityMain;
     private Button libraryBtn;
+    private Button photoMatchBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +36,9 @@ public class MainActivity extends Activity implements View.OnClickListener{
         
         libraryBtn = (Button)findViewById(R.id.photoLibraryBtn);
         libraryBtn.setOnClickListener(this);
+
+        photoMatchBtn = (Button)findViewById(R.id.analysisBtn);
+        photoMatchBtn.setOnClickListener(this);
 
         imageActivityMain = (ImageView)findViewById(R.id.imageActivityMain);
     }
@@ -72,8 +76,15 @@ public class MainActivity extends Activity implements View.OnClickListener{
             startCaptureActivity();
         }else if(view == libraryBtn){
             startPhotoLibraryActivity();
+        }else if(view == photoMatchBtn){
+            startPhotoMatchActivity();
         }
 
+    }
+
+    private void startPhotoMatchActivity() {
+        Intent photoMatchIntent = new Intent(this, PhotoMatchActivity.class);
+        startActivity(photoMatchIntent);
     }
 
     protected void startCaptureActivity() {
