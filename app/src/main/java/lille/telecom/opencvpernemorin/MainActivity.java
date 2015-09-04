@@ -86,6 +86,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
         libraryIntent.setType("image/*");
         libraryIntent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(libraryIntent, "select location picture"),IMAGE_PHOTOLIBRARY);
+        // todo : si image grande, impossible upload
     }
 
 

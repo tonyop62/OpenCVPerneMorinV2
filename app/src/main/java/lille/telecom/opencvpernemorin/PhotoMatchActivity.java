@@ -1,11 +1,11 @@
 package lille.telecom.opencvpernemorin;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class PhotoMatchActivity extends AppCompatActivity {
+public class PhotoMatchActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,6 +19,7 @@ public class PhotoMatchActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_photo_match, menu);
         return true;
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
