@@ -1,18 +1,16 @@
 package lille.telecom.opencvpernemorin;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class MainActivity extends Activity implements View.OnClickListener{
@@ -24,6 +22,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private ImageView imageActivityMain;
     private Button libraryBtn;
     private Button photoMatchBtn;
+    private Bitmap imageFound;
+    private Uri uriFound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +41,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
         photoMatchBtn.setOnClickListener(this);
 
         imageActivityMain = (ImageView)findViewById(R.id.imageActivityMain);
+
     }
 
     @Override
@@ -57,10 +58,12 @@ public class MainActivity extends Activity implements View.OnClickListener{
         if(requestCode == IMAGE_CAPTURE && resultCode == RESULT_OK){
             Bundle extra = data.getExtras();
             Bitmap imageBitmap = (Bitmap)extra.get("data");
+            this.imageFound = imageBitmap;
             imageActivityMain.setImageBitmap(imageBitmap);
         }
         else if(requestCode == IMAGE_PHOTOLIBRARY && resultCode == RESULT_OK){
             Uri photoUri = data.getData();
+            this.uriFound = photoUri;
             try {
                 Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoUri);
                 imageActivityMain.setImageBitmap(imageBitmap);
@@ -79,11 +82,14 @@ public class MainActivity extends Activity implements View.OnClickListener{
         }else if(view == photoMatchBtn){
             startPhotoMatchActivity();
         }
-
     }
 
     private void startPhotoMatchActivity() {
         Intent photoMatchIntent = new Intent(this, PhotoMatchActivity.class);
+//        ByteArrayOutputStream bs = new ByteArrayOutputStream();
+//        this.imageFound.compress(Bitmap.CompressFormat.JPEG, 100, bs); // todo : test photo non vide
+//        photoMatchIntent.putExtra("byteArray", bs.toByteArray());
+        photoMatchIntent.putExtra(this.uriFound.getPath(), "uriFound"); // todo : inverser les parametre (key, value), les key sont des nomdepackege.constante
         startActivity(photoMatchIntent);
     }
 
@@ -97,8 +103,9 @@ public class MainActivity extends Activity implements View.OnClickListener{
         libraryIntent.setType("image/*");
         libraryIntent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(libraryIntent, "select location picture"),IMAGE_PHOTOLIBRARY);
-        // todo : si image grande, impossible upload
+        // todo : si image grande, impossible upload voir photo.compress
+        // todo : onRetainNonConfigurationInstance() perte de photo quand paysage/portrait voir (derniere section) : https://openclassrooms.com/courses/creez-des-applications-pour-android/preambule-quelques-concepts-avances
     }
 
-
+// todo : changer la couleur du bouton quand on clic dessus (pour IHM) : https://openclassrooms.com/courses/creez-des-applications-pour-android/creation-de-vues-personnalisees
 }
