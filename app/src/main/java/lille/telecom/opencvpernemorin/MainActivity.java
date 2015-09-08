@@ -107,6 +107,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
     @Override
     public void onClick(View view) {
+        //view.setBackgroundColor(#F28C0D)
         if(view == captureBtn){
             startCaptureActivity();
         }else if(view == libraryBtn){
