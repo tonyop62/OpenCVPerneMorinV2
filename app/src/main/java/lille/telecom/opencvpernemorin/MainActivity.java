@@ -1,6 +1,8 @@
 package lille.telecom.opencvpernemorin;
 
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -22,8 +24,9 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private ImageView imageActivityMain;
     private Button libraryBtn;
     private Button photoMatchBtn;
-    private Bitmap imageFound;
+    private Bitmap imageBitmap;
     private Uri uriFound;
+    private RetainFragment dataFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +45,20 @@ public class MainActivity extends Activity implements View.OnClickListener{
 
         imageActivityMain = (ImageView)findViewById(R.id.imageActivityMain);
 
+        FragmentManager fm = getFragmentManager();
+        dataFragment = (RetainFragment) fm.findFragmentByTag("data");
+
+        // pour la rotation
+        if(dataFragment == null){
+            // création si pas de datafragment (lancement de l'activity)
+            dataFragment = new RetainFragment();
+            fm.beginTransaction().add(dataFragment, "data").commit();
+            dataFragment.setData(this.imageBitmap);
+        }else{
+            // récupération du bitmap du dataFragment
+            this.imageBitmap = this.dataFragment.getData();
+            imageActivityMain.setImageBitmap(this.imageBitmap);
+        }
     }
 
     @Override
@@ -51,25 +68,40 @@ public class MainActivity extends Activity implements View.OnClickListener{
         return true;
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // recupération du bitmap lors de la destruction (pour la rotation)
+        dataFragment.setData(this.imageBitmap);
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 //        super.onActivityResult(requestCode, resultCode, data);
+        this.imageBitmap = null;
         if(requestCode == IMAGE_CAPTURE && resultCode == RESULT_OK){
             Bundle extra = data.getExtras();
-            Bitmap imageBitmap = (Bitmap)extra.get("data");
-            this.imageFound = imageBitmap;
-            imageActivityMain.setImageBitmap(imageBitmap);
+            this.imageBitmap = (Bitmap)extra.get("data");
+//            this.imageFound = this.imageBitmap;
+            imageActivityMain.setImageBitmap(this.imageBitmap);
         }
         else if(requestCode == IMAGE_PHOTOLIBRARY && resultCode == RESULT_OK){
             Uri photoUri = data.getData();
             this.uriFound = photoUri;
             try {
-                Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoUri);
-                imageActivityMain.setImageBitmap(imageBitmap);
+                this.imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoUri);
+                imageActivityMain.setImageBitmap(this.imageBitmap);
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+        FragmentManager fm = getFragmentManager();
+        dataFragment = (RetainFragment) fm.findFragmentByTag("data");
+
+        if(dataFragment == null){
+            dataFragment = new RetainFragment();
+            fm.beginTransaction().add(dataFragment, "data").commit();
+            dataFragment.setData(this.imageBitmap);
         }
     }
 
@@ -104,8 +136,8 @@ public class MainActivity extends Activity implements View.OnClickListener{
         libraryIntent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(libraryIntent, "select location picture"),IMAGE_PHOTOLIBRARY);
         // todo : si image grande, impossible upload voir photo.compress
-        // todo : onRetainNonConfigurationInstance() perte de photo quand paysage/portrait voir (derniere section) : https://openclassrooms.com/courses/creez-des-applications-pour-android/preambule-quelques-concepts-avances
     }
 
-// todo : changer la couleur du bouton quand on clic dessus (pour IHM) : https://openclassrooms.com/courses/creez-des-applications-pour-android/creation-de-vues-personnalisees
+
+    // todo : changer la couleur du bouton quand on clic dessus (pour IHM) : https://openclassrooms.com/courses/creez-des-applications-pour-android/creation-de-vues-personnalisees
 }
