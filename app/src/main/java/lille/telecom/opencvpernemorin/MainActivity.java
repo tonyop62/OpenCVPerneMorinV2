@@ -12,6 +12,13 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
+
+import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
+import org.opencv.highgui.Highgui;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -91,6 +98,10 @@ public class MainActivity extends Activity implements View.OnClickListener{
             try {
                 this.imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoUri);
                 imageActivityMain.setImageBitmap(this.imageBitmap);
+                Toast toast = Toast.makeText(this, photoUri.getPath(), Toast.LENGTH_LONG);
+                toast.show();
+                OpenCVLoader.initDebug();
+                Mat m = Highgui.imread("drawable://" + R.drawable.frame_18);
             } catch (IOException e) {
                 e.printStackTrace();
             }
