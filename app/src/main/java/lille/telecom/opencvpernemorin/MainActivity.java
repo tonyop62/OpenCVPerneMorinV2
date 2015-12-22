@@ -7,12 +7,18 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
+
+import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends Activity implements View.OnClickListener{
 
     static final String tag = MainActivity.class.getName();
     private Button connectBtn;
+    private String vocabulary;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,11 +50,29 @@ public class MainActivity extends Activity implements View.OnClickListener{
         @Override
         protected String doInBackground(String... params) {
             try {
-                String indexJson = "";
-                indexJson = URLReader.connect();
-                Log.d("json", indexJson);
+                String indexJson = URLReader.connect();
 
                 JSONObject jsonObject = new JSONObject(indexJson);
+                Log.d("jobj", jsonObject.toString(1));
+
+                // récupération du fichier vocabulary
+                vocabulary = jsonObject.getString("vocabulary");
+
+                // liste des brands
+                List<Brand> listBrands = new ArrayList<>();
+
+                JSONArray jsonArray = (JSONArray) jsonObject.get("brands");
+
+                // récupération des brands depuis le json
+                for(int i = 0 ; i < jsonArray.length() ; i++){
+                    JSONObject row = jsonArray.getJSONObject(i);
+                    Brand brand = new Brand();
+                    brand.setBrandName(row.getString("brandname"));
+                    brand.setUrl(row.getString("url"));
+                    brand.setClassifier(row.getString("classifier"));
+                    listBrands.add(brand);
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
