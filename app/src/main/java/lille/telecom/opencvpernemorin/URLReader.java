@@ -9,10 +9,10 @@ import java.net.URL;
  */
 public class URLReader {
 
-    public static String connect() throws Exception {
+    public static String connect(String url) throws Exception {
         String indexJson = "";
-
-        URL verisign = new URL("http://www-rech.telecom-lille.fr/freeorb/index.json");
+// todo : faire une test sur la connexion
+        URL verisign = new URL(url);
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(
                         verisign.openStream()));

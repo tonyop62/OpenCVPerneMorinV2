@@ -1,3 +1,2 @@
-include ':app'
+include ':app', ':volley'
 include ':openCVLibrary2411'
-include ':openCVSample15puzzle'

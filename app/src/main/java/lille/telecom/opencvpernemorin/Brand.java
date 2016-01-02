@@ -1,5 +1,8 @@
 package lille.telecom.opencvpernemorin;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by E34575 on 25/11/2015.
  */
@@ -8,7 +11,11 @@ public class Brand {
     String brandName;
     String url;
     String classifier;
-    String[] images;
+    List<String> images;
+
+    public Brand() {
+        this.images = new ArrayList<>();
+    }
 
     public String getBrandName() {
         return brandName;
@@ -34,11 +41,12 @@ public class Brand {
         this.classifier = classifier;
     }
 
-    public String[] getImages() {
+    public List<String> getImages() {
         return images;
     }
 
-    public void setImages(String[] images) {
+    public void setImages(List<String> images) {
         this.images = images;
     }
+
 }

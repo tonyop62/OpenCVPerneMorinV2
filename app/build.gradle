@@ -10,6 +10,9 @@ android {
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
+        ndk {
+            moduleName "myNativeTest"
+        }
     }
     buildTypes {
         release {
@@ -24,4 +27,5 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:22.0.0'
     compile project(':openCVLibrary2411')
+    compile project(':volley')
 }
