@@ -16,6 +16,8 @@
 
 package com.android.volley;
 
+import java.io.FileNotFoundException;
+
 /**
  * Encapsulates a parsed response for delivery.
  *

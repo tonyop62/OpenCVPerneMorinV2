@@ -20,12 +20,24 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    
+
+    sourceSets.main {
+        jniLibs.srcDirs = ['native-libs']
+    }
+
+    packagingOptions {
+        exclude 'META-INF/maven/org.bytedeco.javacpp-presets/opencv/pom.xml'
+        exclude 'META-INF/maven/org.bytedeco.javacpp-presets/opencv/pom.properties'
+        exclude 'META-INF/maven/org.bytedeco.javacpp-presets/ffmpeg/pom.properties'
+        exclude 'META-INF/maven/org.bytedeco.javacpp-presets/ffmpeg/pom.xml'
+    }
 }
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:22.0.0'
-    compile project(':openCVLibrary2411')
     compile project(':volley')
+    compile group: 'org.bytedeco', name: 'javacv', version: '0.9'
+    compile group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '2.4.9-0.9', classifier:    'android-arm'
+    compile group: 'org.bytedeco.javacpp-presets', name: 'ffmpeg', version: '2.3-0.9', classifier: 'android-arm'
 }
