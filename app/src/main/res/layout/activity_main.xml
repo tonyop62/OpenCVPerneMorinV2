@@ -14,6 +14,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/capture"
+                android:id="@+id/captureBtn" />
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/photo_library"
+                android:id="@+id/photoLibraryBtn" />
+
         </LinearLayout>
 
         <FrameLayout
@@ -27,19 +41,6 @@
                 android:layout_height="match_parent"
                 android:id="@+id/imageActivityMain"
                 android:layout_gravity="center" />
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="connect"
-                android:id="@+id/connectBtn"
-                android:layout_gravity="left|top" />
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/imageView"
-                android:layout_gravity="left|center_vertical" />
         </FrameLayout>
 
         <LinearLayout
@@ -47,6 +48,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/analysis"
+                android:id="@+id/analysisBtn"
+                android:layout_weight="1" />
         </LinearLayout>
 
 

@@ -7,4 +7,5 @@
     <string name="photo_library">Photo Library</string>
     <string name="analysis">Analysis</string>
     <string name="title_activity_photo_match">Matched photo</string>
+    <string name="title_activity_analysis">AnalysisActivity</string>
 </resources>
