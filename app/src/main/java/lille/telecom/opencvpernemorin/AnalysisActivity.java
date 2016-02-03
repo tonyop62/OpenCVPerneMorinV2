@@ -3,10 +3,14 @@ package lille.telecom.opencvpernemorin;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.util.LruCache;
 import android.view.Gravity;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -109,67 +113,86 @@ public class AnalysisActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_analysis);
 
         Loader.load(opencv_core.class);
 
-        // lancement des traitements volley
-        launchSearch("index.json");
+        Bundle extra = getIntent().getExtras();
+        Log.d("pathtoimage", (String) extra.get("pathToImage"));
+        Log.d("pathtoexterne", Environment.getExternalStorageDirectory().getAbsolutePath());
+        try {
+            Log.d("pathtopepsi", getPathFile("Pepsi_13", "jpg").getAbsolutePath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if(extra != null) {
+            // récupération de la photo
+            String pathToImage = (String) extra.get("pathToImage");
 
-        // attente des résultats de volley pour obtenir le bestmatch
-        new Thread(new Runnable() {
+            // lancement des traitements volley
+            launchSearch("index.json", pathToImage);
 
-            @Override
-            public void run() {
-                try {
-                    mCountDownLatch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            // attente des résultats de volley pour obtenir le bestmatch
+            new Thread(new Runnable() {
 
-                // probleme de droit pour ajouter des view au layout (uniquement le thread qui l'a créé le peut) -> imbrication et utilisation de runOnUiThread
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(posInList != null){
-                            // ajout des networkimageview pour voir les résultats
-                            Brand br = listBrands.get(posInList);
-                            for (String imgUrl :  br.getImages()){
-                                Log.d("urlimage", SERVER_TELECOM + "train-images/" + imgUrl);
-                                // ajout d'une networkImageView
-                                NetworkImageView networkImageView = new NetworkImageView(getApplicationContext());
-                                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(250, 250);
-                                layoutParams.gravity = Gravity.CENTER_HORIZONTAL;
-                                networkImageView.setLayoutParams(layoutParams);
-                                LinearLayout linearLayout = (LinearLayout) findViewById(R.id.linearlayout);
-                                networkImageView.setImageUrl(SERVER_TELECOM + "train-images/" + imgUrl, getImageLoader());
-                                linearLayout.addView(networkImageView);
-                            }
-                        }else{
-                            Toast.makeText(getApplicationContext(), "Aucune cohérence d'image trouvée", Toast.LENGTH_LONG).show();
-                        }
+                @Override
+                public void run() {
+                    try {
+                        mCountDownLatch.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                });
+
+                    // probleme de droit pour ajouter des view au layout (uniquement le thread qui l'a créé le peut) -> imbrication et utilisation de runOnUiThread
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (posInList != null) {
+                                // ajout des networkimageview pour voir les résultats
+                                Brand br = listBrands.get(posInList);
+                                for (String imgUrl : br.getImages()) {
+                                    Log.d("urlimage", SERVER_TELECOM + "train-images/" + imgUrl);
+                                    // ajout d'une networkImageView
+                                    NetworkImageView networkImageView = new NetworkImageView(getApplicationContext());
+                                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(250, 250);
+                                    layoutParams.gravity = Gravity.CENTER_HORIZONTAL;
+                                    networkImageView.setLayoutParams(layoutParams);
+                                    LinearLayout linearLayout = (LinearLayout) findViewById(R.id.linearlayout);
+                                    networkImageView.setImageUrl(SERVER_TELECOM + "train-images/" + imgUrl, getImageLoader());
+                                    linearLayout.addView(networkImageView);
+                                }
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Aucune cohérence d'image trouvée", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
 
 
-            }
-        }).start();
+                }
+            }).start();
+        }
 
     }
 
-    private void launchSearch(String adresse) {
+    private void launchSearch(String adresse, String pathToImage) {
 
         // test avec image enregistrée dans l'appli
-        String pathToImage = null;
+        String pathToImageTest = null;
         try {
-            pathToImage = getPathFile("Pepsi_13", "jpg").getAbsolutePath();
+            pathToImageTest = getPathFile("Pepsi_13", "jpg").getAbsolutePath();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        /** l'image de test à 225 rows alors que l'image capturée avec l'appareil photo en 2250 (surement trop qui cause surcharge memoire DeadObjectException) **/
+        /** => redimenssionne donc dans mainactivity **/
+        /** fonctionne si je choisis l'image coca_13 **/
         // chargement du Mat avec l'image à analyser
         imageTest = imread(pathToImage);
+        Log.d("mattestcree", String.valueOf(imageTest.rows()));
 
         String url = SERVER_TELECOM + adresse;
 
@@ -286,15 +309,13 @@ public class AnalysisActivity extends Activity {
                                                                 e.printStackTrace();
                                                             }
 
-                                                            // todo : rendre le code plus propre au niveau de volley, voir doc google sur le singleton
+                                                            // todo : rendre le code plus propre au niveau de volley, voir doc google sur le singleton et produire des fonction (code redondant)
 
                                                             // todo : afficher de belles erreurs non bloquantes
 
                                                             // todo : intégrer une barre de progression pour les traitements opencv
 
                                                             // todo : régler le probleme de fatal signal 11 sysgev (memoire) mail envoyé (marche tout le temps sur samsung glaxy s4)
-
-                                                            // todo : faire les traitements avec une photo prise depuis le smartphone
 
                                                         }
                                                     },

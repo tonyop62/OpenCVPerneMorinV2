@@ -18,9 +18,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -39,6 +41,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Bitmap imageBitmap; // enregistrement en attribut pour la rotation
     private Uri uriFound;
     private RetainFragment dataFragment;
+    private String pathToImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,9 +97,39 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         if(requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK){
 
+            // todo : nouvelle capture entraine le stop de l'appli
+
             // récupération de l'image
-            File f = new File(this.uriFound.getPath());
+            pathToImage = uriFound.getPath();
+            File f = new File(pathToImage);
             imageBitmap = decodeFile(f);
+
+            /** redimensionnement de l'image pour que les traitements opencv passe sinon l'image est trop grande et le traitement fait exploser la mémoire **/
+            // todo : ca serait mieux de le faire dans analysis avant les traitements mais je n'arrive pas à trouver le fonction bitmaptomap dans javacv car ça modifie définitivement la qualité de la photo prise
+            imageBitmap = Bitmap.createScaledBitmap(imageBitmap, 225, 225, false);
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+
+            File file = new File(pathToImage);
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            FileOutputStream fo = null;
+            try {
+                fo = new FileOutputStream(file);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            try {
+                fo.write(bytes.toByteArray());
+                fo.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            /** fin redimensionnement **/
 
             // rotation car la photo est retournée lorsqu'elle arrive dans imageActivityMain
             Matrix matrix = new Matrix();
@@ -109,11 +142,44 @@ public class MainActivity extends Activity implements View.OnClickListener {
         else if(requestCode == IMAGE_PHOTOLIBRARY && resultCode == RESULT_OK){
 
             Uri photoUri = data.getData();
-            uriFound = photoUri;
+            pathToImage = getRealPathFromURI(getApplicationContext(), photoUri);
 
-            File f = new File(getRealPathFromURI(getApplicationContext(), uriFound));
+            File f = new File(pathToImage);
 
             imageBitmap = decodeFile(f);
+
+            /** redimensionnement de l'image pour que les traitements opencv passe sinon l'image est trop grande et le traitement fait exploser la mémoire **/
+            // todo : ca serait mieux de le faire dans analysis avant les traitements mais je n'arrive pas à trouver le fonction bitmaptomap dans javacv car ça modifie définitivement la qualité de la photo prise
+            imageBitmap = Bitmap.createScaledBitmap(imageBitmap, 225, 225, false);
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+
+            File file = new File(pathToImage);
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            FileOutputStream fo = null;
+            try {
+                fo = new FileOutputStream(file);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            try {
+                fo.write(bytes.toByteArray());
+                fo.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            /** fin redimensionnement **/
+
+            // rotation car la photo est retournée lorsqu'elle arrive dans imageActivityMain
+            Matrix matrix = new Matrix();
+            matrix.postRotate(90);
+            imageBitmap = Bitmap.createBitmap(imageBitmap, 0, 0, imageBitmap.getWidth(), imageBitmap.getHeight(), matrix, true);
+
             imageActivityMain.setImageBitmap(imageBitmap);
         }
 
@@ -140,8 +206,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     protected void startCaptureActivity() {
         Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        this.uriFound = getOutputMediaFileUri(MEDIA_TYPE_IMAGE); // créé un fichier pour sauvegarder l'
-        Log.d("urifound", uriFound.toString());
+        this.uriFound = getOutputMediaFileUri(MEDIA_TYPE_IMAGE); // créé un fichier pour sauvegarder l'image
         captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, this.uriFound);
         startActivityForResult(captureIntent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
     }
@@ -155,7 +220,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private void startPhotoMatchActivity() {
         Intent photoMatchIntent = new Intent(this, AnalysisActivity.class);
-        photoMatchIntent.putExtra("uriFound", this.uriFound);
+        photoMatchIntent.putExtra("pathToImage", pathToImage);
         startActivity(photoMatchIntent);
     }
 
@@ -169,13 +234,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
      * @return
      */
     private static File getOutputMediaFile(int type){
-        // todo : To be safe, you should check that the SDCard is mounted using Environment.getExternalStorageState() before doing this.
+        // todo : vérifier que la carte sd est bien montée avant
 
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "MyCameraApp");
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
 
-        // Create the storage directory if it does not exist
+        // Crée un dossier MyCameraApp s'il n'existe pas
         if (! mediaStorageDir.exists()){
             if (! mediaStorageDir.mkdirs()){
                 Log.d("MyCameraApp", "failed to create directory");
@@ -183,7 +246,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
         }
 
-        // Create a media file name
+        // Créé un nom de fichier media
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         File mediaFile;
         if (type == MEDIA_TYPE_IMAGE){
@@ -202,7 +265,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     /**
      * Redimensionne une image de puis un fichier
      * @param f
-     * @return
+     * @return Bitmap
      */
     private Bitmap decodeFile(File f) {
         try {
@@ -233,7 +296,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         } catch (FileNotFoundException e) {}
         return null;
     }
-// todo : voir pour envoyer le path en string de l'uri pour éviter les tests dans analysis
 
     /**
      * donne le chemin réél d'une uri pour accéder au photos d'un support externe
