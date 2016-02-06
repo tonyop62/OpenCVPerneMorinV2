@@ -11,4 +11,18 @@
         android:text="Images trouvées"
         android:id="@+id/analysisActivityTitle"
         android:gravity="center_vertical|center_horizontal" />
+
+    <!--<LinearLayout-->
+        <!--android:id="@+id/linlaProgress"-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="fill_parent"-->
+        <!--android:gravity="center"-->
+        <!--android:orientation="vertical"-->
+        <!--android:visibility="gone" >-->
+        <!--<ProgressBar-->
+            <!--android:id="@+id/analysis_spinner"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content" >-->
+        <!--</ProgressBar>-->
+    <!--</LinearLayout>-->
 </LinearLayout>

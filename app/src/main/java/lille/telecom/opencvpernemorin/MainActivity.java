@@ -17,6 +17,7 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -149,7 +150,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             imageBitmap = decodeFile(f);
 
             /** redimensionnement de l'image pour que les traitements opencv passe sinon l'image est trop grande et le traitement fait exploser la mémoire **/
-            // todo : ca serait mieux de le faire dans analysis avant les traitements mais je n'arrive pas à trouver le fonction bitmaptomap dans javacv car ça modifie définitivement la qualité de la photo prise
+            // todo : ca serait mieux de le faire dans analysis avant les traitements mais je n'arrive pas à trouver le fonction bitmaptomap dans javacv car ça modifie définitivement la qualité de la photo prise, du coup la photo se dégrade de plus en plus
             imageBitmap = Bitmap.createScaledBitmap(imageBitmap, 225, 225, false);
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
@@ -207,8 +208,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
     protected void startCaptureActivity() {
         Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         this.uriFound = getOutputMediaFileUri(MEDIA_TYPE_IMAGE); // créé un fichier pour sauvegarder l'image
-        captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, this.uriFound);
-        startActivityForResult(captureIntent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+        if(uriFound != null) {
+            captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, this.uriFound);
+            startActivityForResult(captureIntent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+        }else{
+            Log.d("urifounf", "est null");
+        }
     }
 
     private void startPhotoLibraryActivity() {
@@ -224,7 +229,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         startActivity(photoMatchIntent);
     }
 
-    private static Uri getOutputMediaFileUri(int type){
+    private Uri getOutputMediaFileUri(int type){
         return Uri.fromFile(getOutputMediaFile(type));
     }
 
@@ -233,33 +238,38 @@ public class MainActivity extends Activity implements View.OnClickListener {
      * @param type
      * @return
      */
-    private static File getOutputMediaFile(int type){
-        // todo : vérifier que la carte sd est bien montée avant
+    private File getOutputMediaFile(int type){
 
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "MyCameraApp");
+        if(isExternalStorageWritable()) {
 
-        // Crée un dossier MyCameraApp s'il n'existe pas
-        if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()){
-                Log.d("MyCameraApp", "failed to create directory");
+            File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "MyCameraApp");
+
+            // Crée un dossier MyCameraApp s'il n'existe pas
+            if (!mediaStorageDir.exists()) {
+                if (!mediaStorageDir.mkdirs()) {
+                    Log.d("MyCameraApp", "failed to create directory");
+                    return null;
+                }
+            }
+
+            // Créé un nom de fichier media
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            File mediaFile;
+            if (type == MEDIA_TYPE_IMAGE) {
+                mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                        "IMG_" + timeStamp + ".jpg");
+            } else if (type == MEDIA_TYPE_VIDEO) {
+                mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                        "VID_" + timeStamp + ".mp4");
+            } else {
                 return null;
             }
-        }
 
-        // Créé un nom de fichier media
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        File mediaFile;
-        if (type == MEDIA_TYPE_IMAGE){
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "IMG_"+ timeStamp + ".jpg");
-        } else if(type == MEDIA_TYPE_VIDEO) {
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "VID_"+ timeStamp + ".mp4");
-        } else {
+            return mediaFile;
+        }else{
+            Toast.makeText(this.getApplicationContext(), "Pas de carte SD trouvée", Toast.LENGTH_LONG).show();
             return null;
         }
-
-        return mediaFile;
     }
 
     /**
@@ -318,5 +328,21 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
     }
 
+    /**
+     * Verifie que le stockage externe est dipsonible en R/W
+     * @return Boolean
+     */
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+//        System.gc();
+    }
 }

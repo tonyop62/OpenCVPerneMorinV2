@@ -1,6 +1,7 @@
 package lille.telecom.opencvpernemorin;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -10,6 +11,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.util.LruCache;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -52,6 +54,7 @@ public class AnalysisActivity extends Activity {
     static final String SERVER_TELECOM = "http://www-rech.telecom-lille.fr/nonfreesift/";
     RequestQueue requestQueue;
     ImageLoader imageLoader; // pour gérer la mise en cache des objets téléchargés
+    ProgressDialog progressDialog;
 
 
     private List<Brand> listBrands;
@@ -118,6 +121,12 @@ public class AnalysisActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_analysis);
 
+        progressDialog = new ProgressDialog(AnalysisActivity.this);
+        progressDialog.setTitle("traitement en cours");
+        progressDialog.setIndeterminate(true);;
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.show();
+
         Loader.load(opencv_core.class);
 
         Bundle extra = getIntent().getExtras();
@@ -151,6 +160,7 @@ public class AnalysisActivity extends Activity {
                         @Override
                         public void run() {
                             if (posInList != null) {
+                                progressDialog.dismiss();
                                 // ajout des networkimageview pour voir les résultats
                                 Brand br = listBrands.get(posInList);
                                 for (String imgUrl : br.getImages()) {
@@ -191,6 +201,7 @@ public class AnalysisActivity extends Activity {
         /** => redimenssionne donc dans mainactivity **/
         /** fonctionne si je choisis l'image coca_13 **/
         // chargement du Mat avec l'image à analyser
+        if(imageTest != null) imageTest.release();
         imageTest = imread(pathToImage);
         Log.d("mattestcree", String.valueOf(imageTest.rows()));
 
@@ -313,8 +324,6 @@ public class AnalysisActivity extends Activity {
 
                                                             // todo : afficher de belles erreurs non bloquantes
 
-                                                            // todo : intégrer une barre de progression pour les traitements opencv
-
                                                             // todo : régler le probleme de fatal signal 11 sysgev (memoire) mail envoyé (marche tout le temps sur samsung glaxy s4)
 
                                                         }
@@ -390,7 +399,6 @@ public class AnalysisActivity extends Activity {
             try {
                 throw new IOException("Could not open vocab file", e);
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
         }
