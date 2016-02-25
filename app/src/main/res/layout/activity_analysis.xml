@@ -12,6 +12,12 @@
         android:id="@+id/analysisActivityTitle"
         android:gravity="center_vertical|center_horizontal" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="accès site"
+        android:id="@+id/btnWeb" />
+
     <!--<LinearLayout-->
         <!--android:id="@+id/linlaProgress"-->
         <!--android:layout_width="fill_parent"-->

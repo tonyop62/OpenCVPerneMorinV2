@@ -3,6 +3,7 @@ package lille.telecom.opencvpernemorin;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.util.Log;
 import android.util.LruCache;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -121,6 +123,7 @@ public class AnalysisActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_analysis);
 
+        // barre de progression pour traitement en cours
         progressDialog = new ProgressDialog(AnalysisActivity.this);
         progressDialog.setTitle("traitement en cours");
         progressDialog.setIndeterminate(true);;
@@ -177,6 +180,19 @@ public class AnalysisActivity extends Activity {
                             } else {
                                 Toast.makeText(getApplicationContext(), "Aucune cohérence d'image trouvée", Toast.LENGTH_LONG).show();
                             }
+                            Button btn = (Button)findViewById(R.id.btnWeb);
+
+                            // bouton d'accès au site web de l'image trouvée
+                            btn.setOnClickListener(new View.OnClickListener() {
+                                Brand br = listBrands.get(posInList);
+                                public void onClick(View v) {
+                                    Intent intent = new Intent();
+                                    intent.setAction(Intent.ACTION_VIEW);
+                                    intent.addCategory(Intent.CATEGORY_BROWSABLE);
+                                    intent.setData(Uri.parse(br.getUrl()));
+                                    startActivity(intent);
+                                }
+                            });
                         }
                     });
 
@@ -185,17 +201,18 @@ public class AnalysisActivity extends Activity {
             }).start();
         }
 
+
     }
 
     private void launchSearch(String adresse, String pathToImage) {
 
         // test avec image enregistrée dans l'appli
-        String pathToImageTest = null;
-        try {
-            pathToImageTest = getPathFile("Pepsi_13", "jpg").getAbsolutePath();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        String pathToImageTest = null;
+//        try {
+//            pathToImageTest = getPathFile("Pepsi_13", "jpg").getAbsolutePath();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
         /** l'image de test à 225 rows alors que l'image capturée avec l'appareil photo en 2250 (surement trop qui cause surcharge memoire DeadObjectException) **/
         /** => redimenssionne donc dans mainactivity **/

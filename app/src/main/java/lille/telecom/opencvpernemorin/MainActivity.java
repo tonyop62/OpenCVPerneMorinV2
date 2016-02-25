@@ -205,6 +205,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
     }
 
+    /**
+     * lancement de la capture
+     */
     protected void startCaptureActivity() {
         Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         this.uriFound = getOutputMediaFileUri(MEDIA_TYPE_IMAGE); // créé un fichier pour sauvegarder l'image
@@ -216,6 +219,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
     }
 
+    /**
+     * lancement de la librairie
+     */
     private void startPhotoLibraryActivity() {
         Intent libraryIntent = new Intent();
         libraryIntent.setType("image/*");
@@ -223,6 +229,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         startActivityForResult(Intent.createChooser(libraryIntent, "select location picture"), IMAGE_PHOTOLIBRARY);
     }
 
+    /**
+     * lancement du traitement
+     */
     private void startPhotoMatchActivity() {
         Intent photoMatchIntent = new Intent(this, AnalysisActivity.class);
         photoMatchIntent.putExtra("pathToImage", pathToImage);
